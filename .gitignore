@@ -1,0 +1,15 @@
+# Patient X-ray images — never commit (privacy)
+images/
+*.png
+*.jpg
+*.jpeg
+*.dcm
+*.dicom
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/

@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CXR 판독 자동 채점 시스템 (프로토타입)</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", sans-serif;
+    margin: 0;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.5;
+  }
+  .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+  header {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+    padding: 20px 32px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+  }
+  header h1 { margin: 0 0 4px 0; font-size: 24px; font-weight: 700; }
+  header p { margin: 0; color: #cbd5e1; font-size: 14px; }
+  .grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 24px; }
+  .panel {
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid #334155;
+  }
+  .panel h2 {
+    margin: 0 0 12px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #93c5fd;
+    border-bottom: 1px solid #334155;
+    padding-bottom: 8px;
+  }
+  .case-info {
+    background: #0f172a;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-size: 14px;
+  }
+  .case-info b { color: #fbbf24; }
+  .xray-img {
+    width: 100%;
+    border-radius: 8px;
+    background: #000;
+    display: block;
+  }
+  .controls {
+    display: flex;
+    gap: 10px;
+    margin: 16px 0;
+    flex-wrap: wrap;
+  }
+  button {
+    border: none;
+    padding: 10px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-primary { background: #2563eb; color: white; }
+  .btn-primary:hover:not(:disabled) { background: #1d4ed8; }
+  .btn-danger { background: #dc2626; color: white; }
+  .btn-danger:hover:not(:disabled) { background: #b91c1c; }
+  .btn-success { background: #16a34a; color: white; }
+  .btn-success:hover:not(:disabled) { background: #15803d; }
+  .btn-ghost { background: #334155; color: #e2e8f0; }
+  .btn-ghost:hover:not(:disabled) { background: #475569; }
+  .status {
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    background: #0f172a;
+    border: 1px solid #334155;
+  }
+  .status.recording {
+    background: #7f1d1d;
+    border-color: #dc2626;
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes pulse { 50% { opacity: 0.7; } }
+  .transcript {
+    min-height: 140px;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 14px;
+    font-size: 14px;
+    white-space: pre-wrap;
+    line-height: 1.7;
+  }
+  .transcript .interim { color: #64748b; font-style: italic; }
+  .score-summary {
+    background: #0f172a;
+    padding: 18px;
+    border-radius: 8px;
+    margin-bottom: 14px;
+    text-align: center;
+  }
+  .score-big {
+    font-size: 42px;
+    font-weight: 700;
+    color: #22d3ee;
+    line-height: 1;
+  }
+  .score-pct { color: #94a3b8; font-size: 13px; margin-top: 4px; }
+  .checklist { list-style: none; padding: 0; margin: 0; }
+  .checklist li {
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    border-radius: 6px;
+    background: #0f172a;
+    border-left: 3px solid #475569;
+    font-size: 13px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .checklist li.pass { border-left-color: #22c55e; }
+  .checklist li.fail { border-left-color: #ef4444; }
+  .checklist li.partial { border-left-color: #f59e0b; }
+  .icon { flex-shrink: 0; width: 18px; }
+  .item-content { flex: 1; }
+  .item-title { font-weight: 600; }
+  .item-detail { color: #94a3b8; font-size: 12px; margin-top: 2px; }
+  .lang-toggle {
+    display: inline-flex;
+    background: #0f172a;
+    border-radius: 6px;
+    padding: 2px;
+    border: 1px solid #334155;
+  }
+  .lang-toggle button {
+    padding: 6px 12px;
+    background: transparent;
+    color: #94a3b8;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .lang-toggle button.active { background: #2563eb; color: white; }
+  details { margin-top: 14px; }
+  summary { cursor: pointer; color: #93c5fd; font-size: 13px; padding: 6px 0; }
+  .answer-box {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 12px;
+    color: #cbd5e1;
+    margin-top: 8px;
+    white-space: pre-wrap;
+    font-family: "Consolas", "Menlo", monospace;
+  }
+  @media (max-width: 1000px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>CXR 판독 자동 채점 시스템 <span style="font-size:13px; color:#bfdbfe; font-weight:400;">프로토타입 v0.1</span></h1>
+    <p>학생이 음성으로 흉부 X-ray를 판독하면 12항목 표준 템플릿에 따라 자동 채점합니다.</p>
+  </header>
+
+  <div class="grid">
+    <!-- LEFT: X-ray + controls -->
+    <div class="panel">
+      <h2>케이스</h2>
+      <div class="case-info">
+        <b>환자:</b> 87세 남자 · <b>CC:</b> Dyspnea, Cough<br>
+        <b>비교:</b> 좌측은 baseline (정상), 우측은 현재(2026-04-10)
+      </div>
+      <img class="xray-img" src="images/case_87m_dyspnea.png" alt="Chest X-ray"
+           onerror="this.outerHTML='<div style=\'background:#0f172a;border:2px dashed #334155;border-radius:8px;padding:60px 20px;text-align:center;color:#64748b;font-size:14px;\'>📷 X-ray 이미지를 <code style=\'color:#fbbf24;\'>images/case_87m_dyspnea.png</code> 경로에 추가하세요.<br><small>저장소에는 환자 정보 보호를 위해 이미지가 포함되지 않습니다.</small></div>'">
+
+      <div class="controls" style="margin-top:18px;">
+        <button id="btnStart" class="btn-primary">🎤 녹음 시작</button>
+        <button id="btnStop" class="btn-danger" disabled>⏹ 중지</button>
+        <button id="btnGrade" class="btn-success" disabled>📝 채점</button>
+        <button id="btnReset" class="btn-ghost">↻ 초기화</button>
+        <div class="lang-toggle">
+          <button id="langKo" class="active" data-lang="ko-KR">한국어</button>
+          <button id="langEn" data-lang="en-US">English</button>
+        </div>
+      </div>
+      <div class="status" id="status">대기 중. '녹음 시작'을 눌러 판독을 시작하세요.</div>
+
+      <details>
+        <summary>📋 정답 보기 (시연용)</summary>
+        <div class="answer-box" id="answerBox"></div>
+      </details>
+    </div>
+
+    <!-- RIGHT: Transcript + Score -->
+    <div class="panel">
+      <h2>학생 판독 (음성 → 텍스트)</h2>
+      <div class="transcript" id="transcript">
+        <span style="color:#64748b;">녹음을 시작하면 여기에 인식된 판독 내용이 표시됩니다.</span>
+      </div>
+
+      <h2 style="margin-top:24px;">채점 결과</h2>
+      <div id="scoreSection">
+        <div style="color:#64748b; font-size:13px; padding:20px; text-align:center;">
+          판독 종료 후 '채점' 버튼을 누르세요.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// CASE DATA — 교수님이 케이스마다 입력할 영역
+// ============================================================
+const CASE = {
+  id: "case_87m_dyspnea",
+  patient: "87/M, Dyspnea, Cough",
+  // 12항목 정답: 각 항목별로 채점 기준
+  // - keywords: 학생이 해당 항목을 언급했다고 인정할 키워드 (대소문자 무관)
+  // - mustInclude: 정답으로 인정받기 위해 반드시 포함되어야 하는 핵심 소견 키워드
+  // - correctAnswer: 모범 답안 문구 (피드백에 표시)
+  items: [
+    {
+      n: 1, title: "View (PA/AP)",
+      keywords: ["chest pa", "chest ap", "ap view", "pa view", "ap", "pa"],
+      mustInclude: ["ap"],
+      correctAnswer: "Chest AP"
+    },
+    {
+      n: 2, title: "Lung volume",
+      keywords: ["lung volume", "폐 용적", "폐용적", "볼륨"],
+      mustInclude: ["symmetric", "hyperinflated", "대칭"],
+      correctAnswer: "Symmetric, normal to mildly hyperinflated"
+    },
+    {
+      n: 3, title: "Tracheal deviation",
+      keywords: ["trachea", "tracheal", "기관"],
+      mustInclude: [],
+      negativeFinding: true,
+      correctAnswer: "Tracheal deviation (-)"
+    },
+    {
+      n: 4, title: "Paratracheal stripe thickening",
+      keywords: ["paratracheal", "stripe"],
+      mustInclude: [],
+      negativeFinding: true,
+      correctAnswer: "Paratracheal stripe thickening (-)"
+    },
+    {
+      n: 5, title: "Hilum (location, size, opacity)",
+      keywords: ["hilum", "hilar"],
+      mustInclude: [],
+      negativeFinding: true,
+      correctAnswer: "No definite hilar enlargement"
+    },
+    {
+      n: 6, title: "Mediastinal widening",
+      keywords: ["mediastin", "종격동"],
+      mustInclude: [],
+      negativeFinding: true,
+      correctAnswer: "Mediastinal widening (-)"
+    },
+    {
+      n: 7, title: "AP window",
+      keywords: ["ap window", "에이피 윈도우"],
+      mustInclude: ["concave"],
+      correctAnswer: "AP window: concave"
+    },
+    {
+      n: 8, title: "Cardiomegaly",
+      keywords: ["cardio", "심비대", "심장 비대"],
+      mustInclude: [],
+      negativeFinding: true,
+      correctAnswer: "Cardiomegaly: limited evaluation on AP"
+    },
+    {
+      n: 9, title: "Lung field findings ★ 핵심",
+      keywords: ["lung field", "폐야"],
+      mustInclude: ["reticular", "interstitial", "patchy", "bilateral", "both", "lower"],
+      requireAny: ["reticular", "interstitial"],
+      correctAnswer: "Diffuse reticular/interstitial opacities in both lungs; superimposed patchy opacities; bilateral lower lung zone predominance"
+    },
+    {
+      n: 10, title: "Silhouette sign",
+      keywords: ["silhouette", "실루엣"],
+      mustInclude: ["positive", "+", "obscur", "diaphragm"],
+      requireAny: ["positive", "+", "obscur", "diaphragm"],
+      correctAnswer: "Silhouette sign (+): partial obscuration of both hemidiaphragms"
+    },
+    {
+      n: 11, title: "CPA blunting",
+      keywords: ["cpa", "costophrenic", "blunt"],
+      mustInclude: [],
+      negativeFinding: true,
+      correctAnswer: "CPA blunting (-)"
+    },
+    {
+      n: 12, title: "Retrocardiac lung marking loss",
+      keywords: ["retrocardiac", "심장 뒤"],
+      mustInclude: [],
+      negativeFinding: true,
+      correctAnswer: "Retrocardiac lung marking loss (-)"
+    }
+  ]
+};
+
+// ============================================================
+// Show answer in details box
+// ============================================================
+document.getElementById("answerBox").textContent =
+  CASE.items.map(it => `${it.n}. ${it.title}\n   → ${it.correctAnswer}`).join("\n\n");
+
+// ============================================================
+// Speech Recognition setup
+// ============================================================
+let recognition = null;
+let isRecording = false;
+let finalTranscript = "";
+let currentLang = "ko-KR";
+
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+function initRecognition() {
+  if (!SpeechRecognition) {
+    document.getElementById("status").textContent =
+      "⚠️ 이 브라우저는 Web Speech API를 지원하지 않습니다. Chrome을 사용하세요.";
+    document.getElementById("btnStart").disabled = true;
+    return false;
+  }
+  recognition = new SpeechRecognition();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = currentLang;
+
+  recognition.onresult = (e) => {
+    let interim = "";
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const t = e.results[i][0].transcript;
+      if (e.results[i].isFinal) finalTranscript += t + " ";
+      else interim += t;
+    }
+    renderTranscript(interim);
+  };
+  recognition.onerror = (e) => {
+    setStatus("⚠️ 인식 오류: " + e.error, false);
+  };
+  recognition.onend = () => {
+    if (isRecording) {
+      try { recognition.start(); } catch (err) {}
+    }
+  };
+  return true;
+}
+
+function renderTranscript(interim) {
+  const el = document.getElementById("transcript");
+  if (!finalTranscript && !interim) {
+    el.innerHTML = '<span style="color:#64748b;">녹음을 시작하면 여기에 인식된 판독 내용이 표시됩니다.</span>';
+    return;
+  }
+  el.innerHTML =
+    escapeHtml(finalTranscript) +
+    (interim ? `<span class="interim">${escapeHtml(interim)}</span>` : "");
+}
+
+function escapeHtml(s) {
+  return s.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+}
+
+function setStatus(msg, recording) {
+  const el = document.getElementById("status");
+  el.textContent = msg;
+  el.classList.toggle("recording", !!recording);
+}
+
+// ============================================================
+// Controls
+// ============================================================
+document.getElementById("btnStart").addEventListener("click", () => {
+  if (!recognition && !initRecognition()) return;
+  if (!recognition) return;
+  finalTranscript = "";
+  renderTranscript("");
+  isRecording = true;
+  recognition.lang = currentLang;
+  try {
+    recognition.start();
+    setStatus("🔴 녹음 중... 학생의 판독을 말해주세요.", true);
+    document.getElementById("btnStart").disabled = true;
+    document.getElementById("btnStop").disabled = false;
+    document.getElementById("btnGrade").disabled = true;
+  } catch (err) {
+    setStatus("⚠️ 시작 실패: " + err.message, false);
+  }
+});
+
+document.getElementById("btnStop").addEventListener("click", () => {
+  isRecording = false;
+  if (recognition) recognition.stop();
+  setStatus("⏹ 녹음 종료됨. '채점' 버튼을 눌러 결과를 확인하세요.", false);
+  document.getElementById("btnStart").disabled = false;
+  document.getElementById("btnStop").disabled = true;
+  document.getElementById("btnGrade").disabled = !finalTranscript.trim();
+});
+
+document.getElementById("btnReset").addEventListener("click", () => {
+  isRecording = false;
+  if (recognition) { try { recognition.abort(); } catch(e){} }
+  finalTranscript = "";
+  renderTranscript("");
+  document.getElementById("scoreSection").innerHTML =
+    `<div style="color:#64748b; font-size:13px; padding:20px; text-align:center;">판독 종료 후 '채점' 버튼을 누르세요.</div>`;
+  setStatus("대기 중. '녹음 시작'을 눌러 판독을 시작하세요.", false);
+  document.getElementById("btnStart").disabled = false;
+  document.getElementById("btnStop").disabled = true;
+  document.getElementById("btnGrade").disabled = true;
+});
+
+document.querySelectorAll(".lang-toggle button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".lang-toggle button").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    currentLang = btn.dataset.lang;
+    if (recognition) recognition.lang = currentLang;
+  });
+});
+
+// ============================================================
+// Grading logic
+// ============================================================
+function gradeTranscript(text) {
+  const lower = text.toLowerCase();
+  const results = CASE.items.map(item => {
+    const mentioned = item.keywords.some(k => lower.includes(k.toLowerCase()));
+
+    let status = "fail";
+    let detail = "";
+
+    if (!mentioned) {
+      status = "fail";
+      detail = `이 항목을 언급하지 않았습니다. 모범답안: ${item.correctAnswer}`;
+    } else if (item.negativeFinding) {
+      // 정상 소견 항목 — 언급만 했어도 OK
+      status = "pass";
+      detail = `언급함 ✓ (정상 소견: ${item.correctAnswer})`;
+    } else if (item.requireAny && item.requireAny.length > 0) {
+      const hasAny = item.requireAny.some(k => lower.includes(k.toLowerCase()));
+      if (hasAny) {
+        status = "pass";
+        detail = `핵심 소견 정확히 언급함 ✓`;
+      } else {
+        status = "partial";
+        detail = `항목은 언급했지만 핵심 소견(${item.requireAny.join(" / ")}) 누락. 모범답안: ${item.correctAnswer}`;
+      }
+    } else if (item.mustInclude && item.mustInclude.length > 0) {
+      const hasAll = item.mustInclude.every(k => lower.includes(k.toLowerCase()));
+      if (hasAll) {
+        status = "pass";
+        detail = `정확히 언급함 ✓`;
+      } else {
+        status = "partial";
+        const missing = item.mustInclude.filter(k => !lower.includes(k.toLowerCase()));
+        detail = `언급은 했지만 일부 키워드 누락: ${missing.join(", ")}. 모범답안: ${item.correctAnswer}`;
+      }
+    } else {
+      status = "pass";
+      detail = `언급함 ✓`;
+    }
+
+    return { ...item, status, detail };
+  });
+
+  const passCount = results.filter(r => r.status === "pass").length;
+  const partialCount = results.filter(r => r.status === "partial").length;
+  const total = results.length;
+  const score = passCount + partialCount * 0.5;
+  const pct = Math.round((score / total) * 100);
+
+  return { results, passCount, partialCount, total, score, pct };
+}
+
+function renderScore(g) {
+  const icon = (s) => s === "pass" ? "✅" : s === "partial" ? "⚠️" : "❌";
+  const html = `
+    <div class="score-summary">
+      <div class="score-big">${g.score} / ${g.total}</div>
+      <div class="score-pct">${g.pct}점 · 통과 ${g.passCount} · 부분 ${g.partialCount} · 누락 ${g.total - g.passCount - g.partialCount}</div>
+    </div>
+    <ul class="checklist">
+      ${g.results.map(r => `
+        <li class="${r.status}">
+          <span class="icon">${icon(r.status)}</span>
+          <div class="item-content">
+            <div class="item-title">${r.n}. ${r.title}</div>
+            <div class="item-detail">${r.detail}</div>
+          </div>
+        </li>
+      `).join("")}
+    </ul>
+  `;
+  document.getElementById("scoreSection").innerHTML = html;
+}
+
+document.getElementById("btnGrade").addEventListener("click", () => {
+  const text = finalTranscript.trim();
+  if (!text) {
+    alert("판독 내용이 없습니다.");
+    return;
+  }
+  const g = gradeTranscript(text);
+  renderScore(g);
+});
+
+// init
+initRecognition();
+</script>
+</body>
+</html>
