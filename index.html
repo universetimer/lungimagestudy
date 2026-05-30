@@ -22,6 +22,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
   }
   header h1 { margin: 0 0 4px 0; font-size: 22px; font-weight: 700; }
   header p { margin: 0; color: #cbd5e1; font-size: 13px; }
@@ -117,6 +119,7 @@
     gap: 8px;
     margin: 12px 0;
     flex-wrap: wrap;
+    align-items: center;
   }
   button.btn {
     border: none;
@@ -132,6 +135,8 @@
   .btn-primary:hover:not(:disabled) { background: #1d4ed8; }
   .btn-success { background: #16a34a; color: white; }
   .btn-success:hover:not(:disabled) { background: #15803d; }
+  .btn-danger { background: #dc2626; color: white; }
+  .btn-danger:hover:not(:disabled) { background: #b91c1c; }
   .btn-ghost { background: #334155; color: #e2e8f0; }
   .btn-ghost:hover:not(:disabled) { background: #475569; }
   .score-summary {
@@ -247,11 +252,104 @@
     border-bottom: 2px solid transparent;
   }
   .tab.active { color: #93c5fd; border-bottom-color: #2563eb; }
-  .save-indicator {
-    font-size: 11px;
-    color: #64748b;
-    margin-left: 6px;
+  .save-indicator { font-size: 11px; color: #64748b; margin-left: 6px; }
+
+  /* mode tabs */
+  .mode-tabs {
+    display: inline-flex;
+    background: #0f172a;
+    border-radius: 8px;
+    padding: 3px;
+    border: 1px solid #334155;
+    margin-bottom: 12px;
   }
+  .mode-tabs button {
+    background: transparent;
+    color: #94a3b8;
+    border: none;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .mode-tabs button.active { background: #2563eb; color: white; }
+
+  /* MCQ */
+  .mcq-list { display: flex; flex-direction: column; gap: 12px; }
+  .mcq-item {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .mcq-q {
+    font-weight: 600;
+    color: #cbd5e1;
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+  .mcq-q .num { color: #93c5fd; }
+  .mcq-options { display: flex; flex-direction: column; gap: 5px; }
+  .mcq-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    cursor: pointer;
+    font-size: 12.5px;
+    line-height: 1.5;
+    transition: border-color 0.1s;
+  }
+  .mcq-option:hover { border-color: #475569; }
+  .mcq-option.selected { border-color: #2563eb; background: #1e3a8a; }
+  .mcq-option.correct { border-color: #22c55e; background: #064e3b; }
+  .mcq-option.wrong { border-color: #ef4444; background: #7f1d1d; }
+  .mcq-option input { margin-top: 2px; cursor: pointer; }
+
+  /* Oral */
+  .oral-wrap { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 16px; }
+  .oral-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+  .oral-status { font-size: 13px; color: #94a3b8; padding: 6px 10px; }
+  .oral-status.recording { color: #ef4444; }
+  .rec-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #475569; margin-right: 6px; vertical-align: middle; }
+  .rec-dot.live { background: #ef4444; animation: pulse 1.4s ease-in-out infinite; }
+  @keyframes pulse { 50% { opacity: 0.4; } }
+  audio { width: 100%; margin-top: 10px; }
+
+  .self-check-list { list-style: none; padding: 0; margin: 12px 0 0 0; }
+  .self-check-list li {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    font-size: 12.5px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .self-check-list li .title { font-weight: 600; color: #cbd5e1; }
+  .self-check-list li .answer { color: #94a3b8; font-size: 11px; margin-top: 2px; }
+  .self-check-buttons { display: flex; gap: 4px; flex-shrink: 0; }
+  .self-check-buttons button {
+    background: #1e293b;
+    border: 1px solid #334155;
+    color: #94a3b8;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: inherit;
+  }
+  .self-check-buttons button.ok-active { background: #064e3b; border-color: #22c55e; color: #4ade80; }
+  .self-check-buttons button.no-active { background: #7f1d1d; border-color: #ef4444; color: #fca5a5; }
+
   @media (max-width: 1000px) {
     .grid { grid-template-columns: 1fr; }
     .summary-grid { grid-template-columns: repeat(2, 1fr); }
@@ -264,7 +362,7 @@
   <header>
     <div>
       <h1>흉부 X-ray 판독 자동 채점</h1>
-      <p>학생이 12항목 표준 판독 템플릿에 따라 텍스트로 판독을 입력하면 자동 채점됩니다.</p>
+      <p>12항목 표준 판독 템플릿. 3가지 시험 방식: 서술형 / 객관식 / 구술</p>
     </div>
     <div class="case-nav">
       <button id="btnPrev" title="이전 케이스">‹</button>
@@ -274,8 +372,8 @@
   </header>
 
   <div class="tabs">
-    <button class="tab active" data-view="case">케이스 판독</button>
-    <button class="tab" data-view="summary">전체 결과 (10케이스)</button>
+    <button class="tab active" data-view="case">케이스 풀기</button>
+    <button class="tab" data-view="summary">전체 결과</button>
   </div>
 
   <!-- CASE VIEW -->
@@ -288,28 +386,82 @@
         <div id="xrayContainer"></div>
       </div>
 
-      <!-- RIGHT: Reading + Score -->
+      <!-- RIGHT: Mode UI -->
       <div class="panel">
-        <h2>판독 입력 <span class="save-indicator" id="saveIndicator"></span></h2>
-        <textarea class="transcript" id="reading"
-          placeholder="12항목 순서대로 자유롭게 입력하세요. 예시:&#10;1) Chest PA&#10;2) Lung volume: symmetric&#10;3) Tracheal deviation (-)&#10;..."></textarea>
-        <div class="controls">
-          <button class="btn btn-success" id="btnGrade">📝 채점</button>
-          <button class="btn btn-ghost" id="btnClear">↻ 입력 지우기</button>
+        <div class="mode-tabs" role="tablist">
+          <button data-mode="freeText" class="active">📝 서술형</button>
+          <button data-mode="click">🖱️ 객관식</button>
+          <button data-mode="oral">🎤 구술</button>
         </div>
-        <div class="hint">
-          💡 영문 의학 용어와 한국어 혼용 가능. 정상 항목은 "(-)" 또는 "negative", 이상 항목은 "(+)" 또는 핵심 소견 키워드를 포함하세요.
+
+        <!-- Free-text mode -->
+        <div id="modeFreeText">
+          <h2>판독 입력 <span class="save-indicator" id="ftSaveIndicator"></span></h2>
+          <textarea class="transcript" id="reading"
+            placeholder="12항목 순서대로 자유롭게 입력하세요. 예시:&#10;1) Chest PA&#10;2) Lung volume: symmetric&#10;..."></textarea>
+          <div class="controls">
+            <button class="btn btn-success" id="btnGrade">📝 채점</button>
+            <button class="btn btn-ghost" id="btnClear">↻ 입력 지우기</button>
+          </div>
+          <div class="hint">
+            💡 영문/한국어 혼용 가능. 정상은 "(-)"/"negative", 이상은 "(+)" + 핵심 소견 키워드.
+          </div>
+          <h2 style="margin-top:16px;">채점 결과</h2>
+          <div id="scoreSection">
+            <div style="color:#64748b;font-size:13px;padding:18px;text-align:center;">판독 입력 후 '채점' 버튼을 누르세요.</div>
+          </div>
+          <details id="answerDetails" style="display:none;">
+            <summary>📋 모범 답안 보기 (채점 후 공개)</summary>
+            <div class="answer-box" id="answerBox"></div>
+          </details>
         </div>
-        <h2 style="margin-top:16px;">채점 결과</h2>
-        <div id="scoreSection">
-          <div style="color:#64748b;font-size:13px;padding:18px;text-align:center;">
-            판독 입력 후 '채점' 버튼을 누르세요.
+
+        <!-- MCQ click mode -->
+        <div id="modeClick" style="display:none;">
+          <h2>객관식 문제 <span class="save-indicator" id="clickSaveIndicator"></span></h2>
+          <div class="hint">
+            💡 각 항목에 대해 가장 적절한 소견을 클릭하세요. '제출' 시 정답과 비교합니다.
+          </div>
+          <div id="mcqList" class="mcq-list"></div>
+          <div class="controls" style="margin-top:14px;">
+            <button class="btn btn-success" id="btnSubmitMCQ">✔ 제출 (채점)</button>
+            <button class="btn btn-ghost" id="btnResetMCQ">↻ 다시 풀기</button>
+          </div>
+          <div id="mcqScore"></div>
+        </div>
+
+        <!-- Oral mode -->
+        <div id="modeOral" style="display:none;">
+          <h2>구술 시험 <span class="save-indicator" id="oralSaveIndicator"></span></h2>
+          <div class="hint">
+            💡 12항목을 음성으로 판독하세요. 녹음 후 모범 답안을 보고 항목별로 직접 자아평가합니다.
+          </div>
+          <div class="oral-wrap">
+            <div class="oral-controls">
+              <button class="btn btn-danger" id="btnRec">🔴 녹음 시작</button>
+              <button class="btn btn-ghost" id="btnStopRec" disabled>⏹ 중지</button>
+              <span class="oral-status" id="oralStatus">
+                <span class="rec-dot" id="recDot"></span>
+                <span id="recLabel">대기</span>
+                <span id="recTimer" style="margin-left:8px;color:#22d3ee;font-variant-numeric:tabular-nums;">00:00</span>
+              </span>
+            </div>
+            <audio id="audioPlayback" controls style="display:none;"></audio>
+          </div>
+
+          <div id="oralPostRec" style="display:none; margin-top:14px;">
+            <div class="hint">
+              📋 아래는 12항목 모범 답안입니다. 본인 녹음을 들으며 각 항목을 맞췄는지 ✓/✗ 클릭하세요.
+            </div>
+            <ul class="self-check-list" id="selfCheckList"></ul>
+            <div class="controls">
+              <button class="btn btn-success" id="btnFinishOral">📊 자아평가 완료</button>
+              <button class="btn btn-ghost" id="btnResetOral">↻ 다시 녹음</button>
+            </div>
+            <div id="oralScore"></div>
           </div>
         </div>
-        <details id="answerDetails" style="display:none;">
-          <summary>📋 모범 답안 보기 (채점 후 공개)</summary>
-          <div class="answer-box" id="answerBox"></div>
-        </details>
+
       </div>
     </div>
   </div>
@@ -318,8 +470,13 @@
   <div id="summaryView" style="display:none;">
     <div class="panel">
       <h2>전체 케이스 결과 요약</h2>
+      <div class="mode-tabs" id="summaryModeTabs">
+        <button data-mode="freeText" class="active">📝 서술형</button>
+        <button data-mode="click">🖱️ 객관식</button>
+        <button data-mode="oral">🎤 구술</button>
+      </div>
       <div class="total-row">
-        평균 점수: <b id="avgScore">—</b> · 채점 완료 <span id="doneCount">0</span> / <span id="totalCount">10</span>
+        평균: <b id="avgScore">—</b> · 완료 <span id="doneCount">0</span> / <span id="totalCount">10</span>
       </div>
       <div class="summary-grid" id="summaryGrid"></div>
       <div class="controls">
@@ -335,8 +492,25 @@
 // ============================================================
 let CASES = [];
 let currentIdx = 0;
-const STORAGE_KEY = "cxr-grading-state-v1";
-let state = { readings: {}, scores: {} };  // {caseId: text}, {caseId: scoreObj}
+let currentMode = "freeText";  // "freeText" | "click" | "oral"
+let summaryMode = "freeText";
+const STORAGE_KEY = "cxr-grading-state-v2";
+
+// state shape:
+// {
+//   freeText: { [caseId]: { reading, score: {pct, score, total} } },
+//   click:    { [caseId]: { selections: {itemIdx: optIdx}, score, submitted: bool } },
+//   oral:     { [caseId]: { selfChecks: {itemIdx: bool}, score, recorded: bool } }
+// }
+let state = { freeText: {}, click: {}, oral: {} };
+
+// Oral recording in-memory state (not persisted)
+let mediaRecorder = null;
+let audioChunks = [];
+let currentStream = null;
+let recStart = 0;
+let recTimerInterval = null;
+let audioUrl = null;
 
 // ============================================================
 // Persistence
@@ -344,17 +518,28 @@ let state = { readings: {}, scores: {} };  // {caseId: text}, {caseId: scoreObj}
 function loadState() {
   try {
     const s = localStorage.getItem(STORAGE_KEY);
-    if (s) state = JSON.parse(s);
-    if (!state.readings) state.readings = {};
-    if (!state.scores) state.scores = {};
+    if (s) {
+      const parsed = JSON.parse(s);
+      state.freeText = parsed.freeText || {};
+      state.click = parsed.click || {};
+      state.oral = parsed.oral || {};
+    }
+    // Migrate from v1 schema (which used "readings" and "scores" for free-text)
+    const v1 = localStorage.getItem("cxr-grading-state-v1");
+    if (v1 && Object.keys(state.freeText).length === 0) {
+      const old = JSON.parse(v1);
+      if (old.readings) {
+        for (const [caseId, reading] of Object.entries(old.readings)) {
+          state.freeText[caseId] = { reading, score: old.scores?.[caseId] };
+        }
+      }
+    }
   } catch (e) {
-    state = { readings: {}, scores: {} };
+    state = { freeText: {}, click: {}, oral: {} };
   }
 }
 function saveState() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  } catch (e) {}
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
 }
 
 // ============================================================
@@ -385,10 +570,14 @@ function populateCaseSelector() {
 }
 
 // ============================================================
-// Render a case
+// Render current case (left panel) + mode UI (right panel)
 // ============================================================
 function renderCase(idx) {
   if (idx < 0 || idx >= CASES.length) return;
+
+  // Clean up any audio resources from previous case
+  resetOralUIOnly();
+
   currentIdx = idx;
   document.getElementById("caseSelect").value = idx;
   const c = CASES[idx];
@@ -414,71 +603,70 @@ function renderCase(idx) {
   imgContainer.innerHTML = "";
   imgContainer.appendChild(img);
 
-  // Saved reading
-  document.getElementById("reading").value = state.readings[c.id] || "";
+  document.getElementById("btnPrev").disabled = idx === 0;
+  document.getElementById("btnNext").disabled = idx === CASES.length - 1;
 
-  // Saved score
-  if (state.scores[c.id]) {
-    renderScore(state.scores[c.id], c);
+  // Render the active mode
+  renderMode(currentMode);
+}
+
+function renderMode(mode) {
+  currentMode = mode;
+  document.querySelectorAll(".mode-tabs button").forEach(b => {
+    if (b.parentElement.id !== "summaryModeTabs") {
+      b.classList.toggle("active", b.dataset.mode === mode);
+    }
+  });
+  document.getElementById("modeFreeText").style.display = mode === "freeText" ? "" : "none";
+  document.getElementById("modeClick").style.display = mode === "click" ? "" : "none";
+  document.getElementById("modeOral").style.display = mode === "oral" ? "" : "none";
+
+  if (mode === "freeText") renderFreeTextMode();
+  else if (mode === "click") renderClickMode();
+  else if (mode === "oral") renderOralMode();
+}
+
+// ============================================================
+// MODE 1: Free-text
+// ============================================================
+function renderFreeTextMode() {
+  const c = CASES[currentIdx];
+  const data = state.freeText[c.id] || {};
+  document.getElementById("reading").value = data.reading || "";
+  document.getElementById("ftSaveIndicator").textContent = data.reading ? "(자동 저장됨)" : "";
+
+  if (data.score) {
+    renderFreeTextScore(data.score, c, /*fromCache*/ true);
   } else {
     document.getElementById("scoreSection").innerHTML =
       `<div style="color:#64748b;font-size:13px;padding:18px;text-align:center;">판독 입력 후 '채점' 버튼을 누르세요.</div>`;
     document.getElementById("answerDetails").style.display = "none";
   }
-
-  document.getElementById("btnPrev").disabled = idx === 0;
-  document.getElementById("btnNext").disabled = idx === CASES.length - 1;
-
-  document.getElementById("saveIndicator").textContent =
-    state.readings[c.id] ? "(자동 저장됨)" : "";
 }
 
-// ============================================================
-// Grading
-// ============================================================
-function gradeReading(text, caseData) {
+function gradeFreeText(text, caseData) {
   const lower = text.toLowerCase();
   const results = caseData.items.map(item => {
     if (item.optional) {
-      // Optional item — only count if mentioned, else neutral
       const mentioned = item.keywords.some(k => lower.includes(k.toLowerCase()));
       return {
         ...item,
         status: mentioned ? "pass" : "skip",
-        detail: mentioned
-          ? `보너스 항목 언급함 ✓`
-          : `보너스 항목 (선택). ${item.correctAnswer || ""}`
+        detail: mentioned ? `보너스 항목 언급함 ✓` : `보너스 항목 (선택)`
       };
     }
-
     const mentioned = item.keywords.some(k => lower.includes(k.toLowerCase()));
-
     if (!mentioned) {
-      return {
-        ...item,
-        status: "fail",
-        detail: `이 항목을 언급하지 않았습니다. 모범답안: ${item.correctAnswer || ""}`
-      };
+      return { ...item, status: "fail", detail: `이 항목을 언급하지 않았습니다.` };
     }
-
     if (item.negative) {
-      // Negative finding — mentioning the keyword is enough
-      return { ...item, status: "pass", detail: `언급함 ✓ (정상 소견: ${item.correctAnswer || ""})` };
+      return { ...item, status: "pass", detail: `언급함 ✓ (정상 소견)` };
     }
-
     if (item.requireAny && item.requireAny.length > 0) {
       const hit = item.requireAny.find(k => lower.includes(k.toLowerCase()));
-      if (hit) {
-        return { ...item, status: "pass", detail: `핵심 소견 "${hit}" 언급 ✓` };
-      }
-      return {
-        ...item,
-        status: "partial",
-        detail: `항목은 언급했지만 핵심 소견(${item.requireAny.join(" / ")}) 누락. 모범답안: ${item.correctAnswer || ""}`
-      };
+      if (hit) return { ...item, status: "pass", detail: `핵심 소견 "${hit}" 언급 ✓` };
+      return { ...item, status: "partial", detail: `항목은 언급했지만 핵심 소견(${item.requireAny.join(" / ")}) 누락.` };
     }
-
-    // Default: mentioned = ok
     return { ...item, status: "pass", detail: `언급함 ✓` };
   });
 
@@ -488,24 +676,23 @@ function gradeReading(text, caseData) {
   const total = counted.length;
   const score = passCount + partialCount * 0.5;
   const pct = total > 0 ? Math.round((score / total) * 100) : 0;
-
   return { results, passCount, partialCount, total, score, pct };
 }
 
-function renderScore(g, caseData) {
-  const icon = (s) => s === "pass" ? "✅" : s === "partial" ? "⚠️" : s === "skip" ? "➖" : "❌";
-  const html = `
+function renderFreeTextScore(g, caseData, fromCache=false) {
+  // g may be just {pct,score,total} from cache, or the full result
+  const html = g.results ? `
     <div class="score-summary">
       <div class="score-big">${g.score} / ${g.total}</div>
       <div class="score-meta">
-        <div style="font-size:14px;font-weight:600;color:#cbd5e1;">${g.pct}점</div>
+        <div style="font-size:14px;font-weight:600;">${g.pct}점</div>
         <div class="score-pct">통과 ${g.passCount} · 부분 ${g.partialCount} · 누락 ${g.total - g.passCount - g.partialCount}</div>
       </div>
     </div>
     <ul class="checklist">
       ${g.results.map(r => `
         <li class="${r.status}">
-          <span class="icon">${icon(r.status)}</span>
+          <span class="icon">${r.status === "pass" ? "✅" : r.status === "partial" ? "⚠️" : r.status === "skip" ? "➖" : "❌"}</span>
           <div class="item-content">
             <div class="item-title">${r.n}. ${escapeHtml(r.title)}</div>
             <div class="item-detail">${escapeHtml(r.detail)}</div>
@@ -513,19 +700,496 @@ function renderScore(g, caseData) {
         </li>
       `).join("")}
     </ul>
+  ` : `
+    <div class="score-summary">
+      <div class="score-big">${g.score} / ${g.total}</div>
+      <div class="score-meta">
+        <div style="font-size:14px;font-weight:600;">${g.pct}점</div>
+        <div class="score-pct">(이전 채점 결과 — 다시 채점하려면 '채점' 버튼)</div>
+      </div>
+    </div>
   `;
   document.getElementById("scoreSection").innerHTML = html;
-
-  // Show answer
   const ansBox = document.getElementById("answerBox");
-  ansBox.textContent = caseData.items
-    .map(it => `${it.n}. ${it.title}\n   → ${it.correctAnswer || "—"}`)
-    .join("\n\n");
+  ansBox.textContent = caseData.items.map(it =>
+    `${it.n}. ${it.title}\n   → ${it.correctAnswer || "—"}`).join("\n\n");
   document.getElementById("answerDetails").style.display = "block";
 }
 
+document.getElementById("reading").addEventListener("input", (e) => {
+  const c = CASES[currentIdx]; if (!c) return;
+  if (!state.freeText[c.id]) state.freeText[c.id] = {};
+  state.freeText[c.id].reading = e.target.value;
+  saveState();
+  document.getElementById("ftSaveIndicator").textContent = "(자동 저장됨)";
+});
+
+document.getElementById("btnGrade").addEventListener("click", () => {
+  const c = CASES[currentIdx]; if (!c) return;
+  const text = document.getElementById("reading").value.trim();
+  if (!text) { alert("판독 내용을 먼저 입력하세요."); return; }
+  const g = gradeFreeText(text, c);
+  state.freeText[c.id] = {
+    reading: text,
+    score: { pct: g.pct, score: g.score, total: g.total }
+  };
+  saveState();
+  renderFreeTextScore(g, c);
+});
+
+document.getElementById("btnClear").addEventListener("click", () => {
+  const c = CASES[currentIdx]; if (!c) return;
+  if (!confirm(`Case ${currentIdx + 1}의 서술형 입력을 지우시겠습니까?`)) return;
+  document.getElementById("reading").value = "";
+  delete state.freeText[c.id];
+  saveState();
+  renderFreeTextMode();
+});
+
 // ============================================================
-// Summary view
+// MODE 2: Multiple-choice click
+// ============================================================
+// Curated fallback option pools per item title (when distractors from
+// other cases are too few or all duplicates of the correct answer)
+const FALLBACK_POOLS = {
+  "View": ["Chest PA", "Chest AP", "Decubitus PA", "Lateral"],
+  "Lung volume": [
+    "Normal, symmetric",
+    "Asymmetric, Rt. lung volume decreased",
+    "Asymmetric, Lt. lung volume decreased",
+    "Symmetric, hyperinflated",
+    "Decreased bilaterally (fibrosis)"
+  ],
+  "Tracheal deviation": [
+    "No deviation (-)",
+    "Deviation to Rt.",
+    "Deviation to Lt.",
+    "Uncheckable"
+  ],
+  "Paratracheal stripe thickening": [
+    "No thickening (-)",
+    "(+) Rt. upper paratracheal",
+    "(+) Lt. upper paratracheal",
+    "Uncheckable"
+  ],
+  "Hilum": [
+    "Both normal",
+    "Rt. hilar enlargement / increased opacity",
+    "Lt. hilar enlargement / increased opacity",
+    "Both increased opacity (perihilar)",
+    "Uncheckable"
+  ],
+  "Mediastinal widening": [
+    "No widening (-)",
+    "(+) Widening",
+    "Mediastinal shift",
+    "Uncheckable"
+  ],
+  "AP window": [
+    "Concave",
+    "Convex",
+    "Flattened / Obliterated",
+    "Uncheckable"
+  ],
+  "Cardiomegaly": [
+    "No (-)",
+    "Mild cardiomegaly (+)",
+    "Marked cardiomegaly (+)",
+    "Uncheckable"
+  ],
+  "Silhouette sign": [
+    "No (-)",
+    "(+) Rt. cardiac border loss",
+    "(+) Lt. cardiac border loss",
+    "(+) Both cardiac borders (shaggy heart)",
+    "(+) Diaphragm margin loss"
+  ],
+  "CPA blunting": [
+    "Both sharp (-)",
+    "(+) Rt. CPA",
+    "(+) Lt. CPA",
+    "(+) Both CPA"
+  ],
+  "Retrocardiac lung marking loss": [
+    "No (-)",
+    "Yes (+)",
+    "Partial",
+    "Uncheckable"
+  ]
+};
+
+// Match item title to a fallback pool key (substring match, ignoring ★/punctuation)
+function matchFallbackKey(title) {
+  const t = (title || "").toLowerCase().replace(/★/g, "").trim();
+  for (const key of Object.keys(FALLBACK_POOLS)) {
+    if (t.includes(key.toLowerCase())) return key;
+  }
+  return null;
+}
+
+function getDistractors(itemTitle, currentCaseIdx, correctAnswer, count=3) {
+  const normalize = s => (s || "").toLowerCase().replace(/[★\s]/g, "").replace(/[^a-z0-9가-힣]/g, "");
+  const target = normalize(itemTitle);
+  const normCorrect = normalize(correctAnswer);
+
+  // Pool 1: correctAnswers of same-titled items in other cases (skip duplicates of correct)
+  const fromCases = [];
+  CASES.forEach((c, i) => {
+    if (i === currentCaseIdx) return;
+    c.items.forEach(it => {
+      if (normalize(it.title) === target && it.correctAnswer && normalize(it.correctAnswer) !== normCorrect) {
+        fromCases.push(it.correctAnswer);
+      }
+    });
+  });
+
+  // Pool 2: curated fallback options (excluding the correct one)
+  const fallbackKey = matchFallbackKey(itemTitle);
+  const fallback = fallbackKey
+    ? FALLBACK_POOLS[fallbackKey].filter(o => normalize(o) !== normCorrect)
+    : [];
+
+  // Combine, shuffle, take unique
+  const pool = [...fromCases, ...fallback];
+  const seen = new Set();
+  const out = [];
+  while (pool.length && out.length < count) {
+    const i = Math.floor(Math.random() * pool.length);
+    const v = pool.splice(i, 1)[0];
+    const k = normalize(v);
+    if (!seen.has(k)) { seen.add(k); out.push(v); }
+  }
+  return out;
+}
+
+function buildMCQ(caseData, caseIdx) {
+  return caseData.items.filter(it => !it.optional).map((item, idx) => {
+    const correct = item.correctAnswer || "(no answer)";
+    const distractors = getDistractors(item.title, caseIdx, correct, 3);
+    // Final safety net if still under 3
+    const filler = ["Other / not specified", "Uncheckable", "Normal"];
+    let fi = 0;
+    while (distractors.length < 3 && fi < filler.length) {
+      if (!distractors.includes(filler[fi]) && filler[fi] !== correct) {
+        distractors.push(filler[fi]);
+      }
+      fi++;
+    }
+    const allOpts = [correct, ...distractors];
+    // Shuffle
+    for (let i = allOpts.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [allOpts[i], allOpts[j]] = [allOpts[j], allOpts[i]];
+    }
+    const correctIdx = allOpts.indexOf(correct);
+    return { ...item, options: allOpts, correctIdx };
+  });
+}
+
+function renderClickMode() {
+  const c = CASES[currentIdx];
+  const saved = state.click[c.id];
+
+  // Use saved question set if available (so options stay stable on revisit)
+  let mcq = saved?.mcq;
+  if (!mcq) {
+    mcq = buildMCQ(c, currentIdx);
+    state.click[c.id] = { mcq, selections: {}, submitted: false };
+    saveState();
+  }
+
+  const submitted = saved?.submitted || false;
+  const selections = saved?.selections || {};
+
+  const list = document.getElementById("mcqList");
+  list.innerHTML = mcq.map((item, i) => `
+    <div class="mcq-item" data-i="${i}">
+      <div class="mcq-q"><span class="num">${item.n}.</span> ${escapeHtml(item.title.replace(/\s*★$/, ""))}</div>
+      <div class="mcq-options">
+        ${item.options.map((opt, oi) => {
+          const selectedIdx = selections[i];
+          let cls = "mcq-option";
+          if (selectedIdx === oi) cls += " selected";
+          if (submitted) {
+            if (oi === item.correctIdx) cls += " correct";
+            else if (selectedIdx === oi) cls += " wrong";
+          }
+          return `
+            <label class="${cls}" data-oi="${oi}">
+              <input type="radio" name="mcq-${i}" value="${oi}"
+                ${selectedIdx === oi ? "checked" : ""}
+                ${submitted ? "disabled" : ""}>
+              <span>${escapeHtml(opt)}</span>
+            </label>
+          `;
+        }).join("")}
+      </div>
+    </div>
+  `).join("");
+
+  // Wire up clicks
+  list.querySelectorAll(".mcq-option").forEach(el => {
+    el.addEventListener("click", (e) => {
+      if (state.click[c.id]?.submitted) return;
+      const itemIdx = +el.closest(".mcq-item").dataset.i;
+      const optIdx = +el.dataset.oi;
+      if (!state.click[c.id]) state.click[c.id] = { mcq, selections: {}, submitted: false };
+      state.click[c.id].selections[itemIdx] = optIdx;
+      saveState();
+      // Update visual without full re-render
+      el.parentElement.querySelectorAll(".mcq-option").forEach(o => o.classList.remove("selected"));
+      el.classList.add("selected");
+      document.getElementById("clickSaveIndicator").textContent = "(자동 저장됨)";
+    });
+  });
+
+  // Render score if submitted
+  document.getElementById("mcqScore").innerHTML = submitted
+    ? renderMCQScoreHTML(mcq, selections)
+    : "";
+}
+
+function renderMCQScoreHTML(mcq, selections) {
+  const total = mcq.length;
+  let correct = 0;
+  mcq.forEach((it, i) => { if (selections[i] === it.correctIdx) correct++; });
+  const pct = Math.round((correct / total) * 100);
+  return `
+    <div class="score-summary" style="margin-top:14px;">
+      <div class="score-big">${correct} / ${total}</div>
+      <div class="score-meta">
+        <div style="font-size:14px;font-weight:600;">${pct}점</div>
+        <div class="score-pct">정답률 ${pct}%</div>
+      </div>
+    </div>
+  `;
+}
+
+document.getElementById("btnSubmitMCQ").addEventListener("click", () => {
+  const c = CASES[currentIdx];
+  const data = state.click[c.id];
+  if (!data || !data.mcq) return;
+  const total = data.mcq.length;
+  const answered = Object.keys(data.selections || {}).length;
+  if (answered < total) {
+    if (!confirm(`아직 ${total - answered}개 항목이 답해지지 않았습니다. 그래도 제출하시겠습니까?`)) return;
+  }
+  data.submitted = true;
+  let correct = 0;
+  data.mcq.forEach((it, i) => { if (data.selections[i] === it.correctIdx) correct++; });
+  data.score = { pct: Math.round((correct / total) * 100), score: correct, total };
+  saveState();
+  renderClickMode();
+});
+
+document.getElementById("btnResetMCQ").addEventListener("click", () => {
+  const c = CASES[currentIdx];
+  if (!confirm(`Case ${currentIdx + 1}의 객관식 답안을 초기화하고 새로 문제를 출제하시겠습니까?`)) return;
+  delete state.click[c.id];
+  saveState();
+  renderClickMode();
+});
+
+// ============================================================
+// MODE 3: Oral (record + self-assessment)
+// ============================================================
+function resetOralUIOnly() {
+  // Stop any active recording and free resources
+  if (mediaRecorder && mediaRecorder.state !== "inactive") {
+    try { mediaRecorder.stop(); } catch(e){}
+  }
+  if (currentStream) {
+    currentStream.getTracks().forEach(t => t.stop());
+    currentStream = null;
+  }
+  if (audioUrl) {
+    URL.revokeObjectURL(audioUrl);
+    audioUrl = null;
+  }
+  clearInterval(recTimerInterval);
+  audioChunks = [];
+  const audioEl = document.getElementById("audioPlayback");
+  if (audioEl) { audioEl.src = ""; audioEl.style.display = "none"; }
+  const recDot = document.getElementById("recDot");
+  if (recDot) recDot.classList.remove("live");
+  const recLabel = document.getElementById("recLabel");
+  if (recLabel) recLabel.textContent = "대기";
+  const recTimer = document.getElementById("recTimer");
+  if (recTimer) recTimer.textContent = "00:00";
+  const btnRec = document.getElementById("btnRec");
+  if (btnRec) btnRec.disabled = false;
+  const btnStopRec = document.getElementById("btnStopRec");
+  if (btnStopRec) btnStopRec.disabled = true;
+  const postRec = document.getElementById("oralPostRec");
+  if (postRec) postRec.style.display = "none";
+}
+
+function renderOralMode() {
+  const c = CASES[currentIdx];
+  const data = state.oral[c.id] || {};
+
+  // If they already did self-assessment, show the result + checklist
+  if (data.selfChecks && Object.keys(data.selfChecks).length > 0) {
+    renderSelfCheckList(c);
+    document.getElementById("oralPostRec").style.display = "block";
+    if (data.score) {
+      document.getElementById("oralScore").innerHTML = renderOralScoreHTML(data.score);
+    }
+  } else {
+    document.getElementById("oralPostRec").style.display = "none";
+    document.getElementById("oralScore").innerHTML = "";
+  }
+  document.getElementById("oralSaveIndicator").textContent =
+    data.score ? `(이전 평가: ${data.score.pct}점)` : "";
+}
+
+document.getElementById("btnRec").addEventListener("click", async () => {
+  try {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert("이 브라우저는 녹음을 지원하지 않습니다. Chrome을 사용하세요.");
+      return;
+    }
+    currentStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    audioChunks = [];
+    mediaRecorder = new MediaRecorder(currentStream);
+    mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(audioChunks, { type: "audio/webm" });
+      if (audioUrl) URL.revokeObjectURL(audioUrl);
+      audioUrl = URL.createObjectURL(blob);
+      const audioEl = document.getElementById("audioPlayback");
+      audioEl.src = audioUrl;
+      audioEl.style.display = "block";
+      if (currentStream) {
+        currentStream.getTracks().forEach(t => t.stop());
+        currentStream = null;
+      }
+      document.getElementById("recDot").classList.remove("live");
+      document.getElementById("recLabel").textContent = "녹음 완료";
+      clearInterval(recTimerInterval);
+
+      // Reveal self-check list
+      const c = CASES[currentIdx];
+      renderSelfCheckList(c);
+      document.getElementById("oralPostRec").style.display = "block";
+    };
+    mediaRecorder.start();
+    document.getElementById("recDot").classList.add("live");
+    document.getElementById("recLabel").textContent = "녹음 중...";
+    document.getElementById("btnRec").disabled = true;
+    document.getElementById("btnStopRec").disabled = false;
+    document.getElementById("audioPlayback").style.display = "none";
+    recStart = Date.now();
+    clearInterval(recTimerInterval);
+    recTimerInterval = setInterval(() => {
+      const sec = Math.floor((Date.now() - recStart) / 1000);
+      const m = String(Math.floor(sec / 60)).padStart(2, "0");
+      const s = String(sec % 60).padStart(2, "0");
+      document.getElementById("recTimer").textContent = `${m}:${s}`;
+    }, 500);
+  } catch (err) {
+    alert("마이크 접근 실패: " + err.message);
+  }
+});
+
+document.getElementById("btnStopRec").addEventListener("click", () => {
+  if (mediaRecorder && mediaRecorder.state !== "inactive") {
+    mediaRecorder.stop();
+  }
+  document.getElementById("btnRec").disabled = false;
+  document.getElementById("btnStopRec").disabled = true;
+});
+
+function renderSelfCheckList(c) {
+  const data = state.oral[c.id] || (state.oral[c.id] = { selfChecks: {} });
+  const checks = data.selfChecks || {};
+  const list = document.getElementById("selfCheckList");
+  const items = c.items.filter(it => !it.optional);
+  list.innerHTML = items.map((it, i) => {
+    const v = checks[i];
+    return `
+      <li data-i="${i}">
+        <div class="item-content">
+          <div class="title">${it.n}. ${escapeHtml(it.title.replace(/\s*★$/, ""))}</div>
+          <div class="answer">→ ${escapeHtml(it.correctAnswer || "—")}</div>
+        </div>
+        <div class="self-check-buttons">
+          <button data-v="ok" class="${v === true ? 'ok-active' : ''}">맞춤 ✓</button>
+          <button data-v="no" class="${v === false ? 'no-active' : ''}">틀림 ✗</button>
+        </div>
+      </li>
+    `;
+  }).join("");
+  list.querySelectorAll(".self-check-buttons button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const li = btn.closest("li");
+      const i = +li.dataset.i;
+      const val = btn.dataset.v === "ok";
+      if (!state.oral[c.id]) state.oral[c.id] = { selfChecks: {} };
+      state.oral[c.id].selfChecks[i] = val;
+      saveState();
+      renderSelfCheckList(c);
+      document.getElementById("oralSaveIndicator").textContent = "(자동 저장됨)";
+    });
+  });
+}
+
+document.getElementById("btnFinishOral").addEventListener("click", () => {
+  const c = CASES[currentIdx];
+  const data = state.oral[c.id];
+  if (!data || !data.selfChecks) { alert("자아평가를 먼저 해주세요."); return; }
+  const items = c.items.filter(it => !it.optional);
+  const total = items.length;
+  let correct = 0;
+  for (let i = 0; i < total; i++) {
+    if (data.selfChecks[i] === true) correct++;
+  }
+  const pct = Math.round((correct / total) * 100);
+  data.score = { pct, score: correct, total };
+  saveState();
+  document.getElementById("oralScore").innerHTML = renderOralScoreHTML(data.score);
+  document.getElementById("oralSaveIndicator").textContent = `(완료: ${pct}점)`;
+});
+
+document.getElementById("btnResetOral").addEventListener("click", () => {
+  const c = CASES[currentIdx];
+  if (!confirm(`Case ${currentIdx + 1}의 구술 시험 결과를 초기화하시겠습니까?`)) return;
+  delete state.oral[c.id];
+  saveState();
+  resetOralUIOnly();
+  renderOralMode();
+});
+
+function renderOralScoreHTML(sc) {
+  return `
+    <div class="score-summary" style="margin-top:14px;">
+      <div class="score-big">${sc.score} / ${sc.total}</div>
+      <div class="score-meta">
+        <div style="font-size:14px;font-weight:600;">${sc.pct}점</div>
+        <div class="score-pct">자아평가 결과</div>
+      </div>
+    </div>
+  `;
+}
+
+// ============================================================
+// Mode tab clicks
+// ============================================================
+document.querySelectorAll(".mode-tabs button").forEach(b => {
+  b.addEventListener("click", () => {
+    const parent = b.parentElement;
+    if (parent.id === "summaryModeTabs") {
+      parent.querySelectorAll("button").forEach(x => x.classList.toggle("active", x === b));
+      summaryMode = b.dataset.mode;
+      renderSummary();
+    } else {
+      renderMode(b.dataset.mode);
+    }
+  });
+});
+
+// ============================================================
+// Summary
 // ============================================================
 function renderSummary() {
   const grid = document.getElementById("summaryGrid");
@@ -533,7 +1197,7 @@ function renderSummary() {
   let done = 0, sumPct = 0;
 
   grid.innerHTML = CASES.map((c, i) => {
-    const sc = state.scores[c.id];
+    const sc = state[summaryMode][c.id]?.score;
     if (sc) { done++; sumPct += sc.pct; }
     const cls = !sc ? "none"
       : sc.pct >= 80 ? "high"
@@ -550,6 +1214,7 @@ function renderSummary() {
   grid.querySelectorAll(".summary-card").forEach(el => {
     el.addEventListener("click", () => {
       switchView("case");
+      currentMode = summaryMode;
       renderCase(+el.dataset.idx);
     });
   });
@@ -560,27 +1225,30 @@ function renderSummary() {
     done > 0 ? `${Math.round(sumPct / done)}점` : "—";
 }
 
+document.getElementById("btnResetAll").addEventListener("click", () => {
+  if (!confirm("정말로 모든 케이스의 모든 모드(서술형/객관식/구술) 진행 상황을 초기화하시겠습니까?")) return;
+  state = { freeText: {}, click: {}, oral: {} };
+  saveState();
+  renderCase(currentIdx);
+  renderSummary();
+});
+
 // ============================================================
-// Utility
+// Utility & view switcher
 // ============================================================
 function escapeHtml(s) {
   return String(s || "").replace(/[&<>]/g, c =>
-    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c])
-  );
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
 }
 
 function switchView(name) {
   document.querySelectorAll(".tab").forEach(t =>
-    t.classList.toggle("active", t.dataset.view === name)
-  );
+    t.classList.toggle("active", t.dataset.view === name));
   document.getElementById("caseView").style.display = name === "case" ? "" : "none";
   document.getElementById("summaryView").style.display = name === "summary" ? "" : "none";
   if (name === "summary") renderSummary();
 }
 
-// ============================================================
-// Wire up controls
-// ============================================================
 document.querySelectorAll(".tab").forEach(t => {
   t.addEventListener("click", () => switchView(t.dataset.view));
 });
@@ -591,48 +1259,6 @@ document.getElementById("btnPrev").addEventListener("click", () => {
 document.getElementById("btnNext").addEventListener("click", () => {
   if (currentIdx < CASES.length - 1) renderCase(currentIdx + 1);
 });
-
-document.getElementById("reading").addEventListener("input", (e) => {
-  const c = CASES[currentIdx];
-  if (!c) return;
-  state.readings[c.id] = e.target.value;
-  saveState();
-  document.getElementById("saveIndicator").textContent = "(자동 저장됨)";
-});
-
-document.getElementById("btnGrade").addEventListener("click", () => {
-  const c = CASES[currentIdx];
-  if (!c) return;
-  const text = document.getElementById("reading").value.trim();
-  if (!text) { alert("판독 내용을 먼저 입력하세요."); return; }
-  const g = gradeReading(text, c);
-  state.scores[c.id] = { pct: g.pct, score: g.score, total: g.total };
-  saveState();
-  renderScore(g, c);
-});
-
-document.getElementById("btnClear").addEventListener("click", () => {
-  const c = CASES[currentIdx];
-  if (!c) return;
-  if (!confirm(`Case ${currentIdx + 1}의 판독 입력을 지우시겠습니까?`)) return;
-  document.getElementById("reading").value = "";
-  delete state.readings[c.id];
-  delete state.scores[c.id];
-  saveState();
-  document.getElementById("scoreSection").innerHTML =
-    `<div style="color:#64748b;font-size:13px;padding:18px;text-align:center;">판독 입력 후 '채점' 버튼을 누르세요.</div>`;
-  document.getElementById("answerDetails").style.display = "none";
-  document.getElementById("saveIndicator").textContent = "";
-});
-
-document.getElementById("btnResetAll").addEventListener("click", () => {
-  if (!confirm("정말로 모든 케이스의 판독과 점수를 초기화하시겠습니까?")) return;
-  state = { readings: {}, scores: {} };
-  saveState();
-  renderCase(currentIdx);
-  renderSummary();
-});
-
 document.addEventListener("keydown", (e) => {
   if (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT") return;
   if (e.key === "ArrowLeft" && currentIdx > 0) renderCase(currentIdx - 1);
