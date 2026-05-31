@@ -48,17 +48,19 @@ def find_ext(base):
     return None
 
 def mask_corners(img):
-    """Mask top-left and top-right corner DICOM text, preserving R/L marker."""
+    """Mask all four corner DICOM text regions completely.
+    Preserving R/L radiographic markers is nice-to-have but secondary to
+    removing every line that could carry identifiers/metadata."""
     w, h = img.size
     draw = ImageDraw.Draw(img)
-    # Mask top-left: skip the very top 50px so R marker stays visible
-    # Cover ~rows 50-170, cols 0-180 (under the R marker)
-    draw.rectangle([0, 50, int(w * 0.18), int(h * 0.10)], fill="black")
-    # Mask top-right: cover ~rows 0-150, cols (w-220)-w
-    draw.rectangle([int(w * 0.78), 0, w, int(h * 0.10)], fill="black")
-    # Also mask bottom-left and bottom-right small technical text
-    draw.rectangle([0, int(h * 0.94), int(w * 0.20), h], fill="black")
-    draw.rectangle([int(w * 0.80), int(h * 0.94), w, h], fill="black")
+    # Top-left: 0..18% width × 0..12% height (covers Idx/Im/DigitalDiagnost/R)
+    draw.rectangle([0, 0, int(w * 0.20), int(h * 0.12)], fill="black")
+    # Top-right: 78..100% × 0..12% (covers hospital name, study date, age/sex)
+    draw.rectangle([int(w * 0.78), 0, w, int(h * 0.12)], fill="black")
+    # Bottom-left: technical info / scale
+    draw.rectangle([0, int(h * 0.92), int(w * 0.22), h], fill="black")
+    # Bottom-right: window/level info
+    draw.rectangle([int(w * 0.78), int(h * 0.92), w, h], fill="black")
     return img
 
 # Load source metadata (has findings_text per case)

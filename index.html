@@ -57,12 +57,25 @@
     font-size: 13px;
     cursor: pointer;
   }
-  .grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 18px; }
+  .grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 18px;
+    align-items: start;   /* allow left panel to stop growing */
+  }
   .panel {
     background: #1e293b;
     border-radius: 12px;
     padding: 18px;
     border: 1px solid #334155;
+  }
+  /* Keep the X-ray panel pinned while the MCQ/oral checklist scrolls
+     beside it. align-items: start on .grid lets sticky take effect. */
+  .grid > .panel.sticky-pane {
+    position: sticky;
+    top: 16px;
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
   }
   .panel h2 {
     margin: 0 0 12px 0;
@@ -379,8 +392,8 @@
   <!-- CASE VIEW -->
   <div id="caseView">
     <div class="grid">
-      <!-- LEFT: X-ray -->
-      <div class="panel">
+      <!-- LEFT: X-ray (sticky while right side scrolls) -->
+      <div class="panel sticky-pane">
         <h2 id="caseTitle">Loading...</h2>
         <div class="case-meta" id="caseMeta"></div>
         <div id="xrayContainer"></div>
