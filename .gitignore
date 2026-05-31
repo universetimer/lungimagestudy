@@ -1,10 +1,13 @@
-# Patient X-ray images — never commit (privacy)
-images/
-*.png
-*.jpg
-*.jpeg
+# Raw DICOM files — never commit
 *.dcm
 *.dicom
+
+# Temp PPT extraction artifacts
+_ppt_dump/
+_ppt_media/
+_case_xrays/
+_extracted_cases.json
+_final_cases_meta.json
 
 # OS
 .DS_Store
