@@ -1,5 +1,5 @@
 {
-  "version": "2.0",
+  "version": "2.1",
   "title": "흉부 X-ray 판독 자동 채점",
   "description": "12항목 표준 판독 템플릿 기반 자동 채점. 학생이 텍스트로 판독을 입력하면 항목별로 평가합니다.",
   "template_items": [

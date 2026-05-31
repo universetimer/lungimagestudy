@@ -504,6 +504,7 @@
 // State
 // ============================================================
 let CASES = [];
+let CASES_VERSION = "1";   // bumped per cases.json release — busts image cache
 let currentIdx = 0;
 let currentMode = "freeText";  // "freeText" | "click" | "oral"
 let summaryMode = "freeText";
@@ -563,6 +564,7 @@ async function loadCases() {
     const res = await fetch("cases.json?v=" + Date.now());
     const data = await res.json();
     CASES = data.cases || [];
+    CASES_VERSION = String(data.version || Date.now());
     if (CASES.length === 0) throw new Error("No cases");
     populateCaseSelector();
     renderCase(0);
@@ -607,12 +609,14 @@ function renderCase(idx) {
   img.alt = c.label;
   img.onerror = () => {
     imgContainer.innerHTML = `<div class="xray-placeholder">
-      📷 X-ray 이미지 없음<br>
-      <code>${escapeHtml(c.image)}</code> 경로에 파일을 추가하세요.<br>
-      <small>저장소에는 환자 정보 보호를 위해 이미지가 포함되지 않습니다.</small>
+      📷 X-ray 이미지 로드 실패<br>
+      <code>${escapeHtml(c.image)}</code><br>
+      <small>브라우저 캐시 문제일 수 있습니다. <b>Ctrl+Shift+R</b> (강제 새로고침)으로 다시 시도하세요.</small>
     </div>`;
   };
-  img.src = c.image;
+  // Append version query string so browsers refetch when cases.json
+  // version bumps (avoids stuck "image-missing" cache from earlier deploys).
+  img.src = c.image + (c.image.includes("?") ? "&" : "?") + "v=" + encodeURIComponent(CASES_VERSION);
   imgContainer.innerHTML = "";
   imgContainer.appendChild(img);
 
