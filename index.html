@@ -3,6 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Aggressively disable browser/CDN caching of this HTML so version
+     bumps take effect on next visit without manual hard refresh. -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>흉부 X-ray 판독 자동 채점</title>
 <style>
   * { box-sizing: border-box; }
@@ -608,14 +613,34 @@ function renderCase(idx) {
   img.className = "xray-img";
   img.alt = c.label;
   img.onerror = () => {
+    // First-time auto-recovery: if we haven't already tried bypassing the
+    // cache this session, force a hard reload that bypasses every cache.
+    const RELOAD_FLAG = "cxr-auto-reload-attempted-v3";
+    if (!sessionStorage.getItem(RELOAD_FLAG)) {
+      sessionStorage.setItem(RELOAD_FLAG, "1");
+      // Bump a query string on the URL to force a fresh GET of HTML too
+      const u = new URL(window.location.href);
+      u.searchParams.set("nocache", String(Date.now()));
+      window.location.replace(u.toString());
+      return;
+    }
     imgContainer.innerHTML = `<div class="xray-placeholder">
       📷 X-ray 이미지 로드 실패<br>
       <code>${escapeHtml(c.image)}</code><br>
-      <small>브라우저 캐시 문제일 수 있습니다. <b>Ctrl+Shift+R</b> (강제 새로고침)으로 다시 시도하세요.</small>
+      <small>
+        <b>Ctrl+Shift+R</b> (Windows) / <b>Cmd+Shift+R</b> (Mac) 으로 강제 새로고침 해주세요.
+        <br>그래도 안 되면 시크릿 모드로 열어보세요.
+      </small>
+      <br><br>
+      <button onclick="sessionStorage.clear(); location.reload(true);"
+              style="background:#dc2626;color:white;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;font-family:inherit;">
+        🔄 강제 새로고침
+      </button>
     </div>`;
   };
-  // Append version query string so browsers refetch when cases.json
-  // version bumps (avoids stuck "image-missing" cache from earlier deploys).
+  // Cache-bust image URL with version. images/v3/ subdir means even if
+  // the OLD index.html (cached) requested /images/case_NN.png, that's a
+  // different URL than what we use now — no stale 404 cache hit.
   img.src = c.image + (c.image.includes("?") ? "&" : "?") + "v=" + encodeURIComponent(CASES_VERSION);
   imgContainer.innerHTML = "";
   imgContainer.appendChild(img);
