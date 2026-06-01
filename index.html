@@ -285,6 +285,60 @@
   .tab.active { color: #93c5fd; border-bottom-color: #2563eb; }
   .save-indicator { font-size: 11px; color: #64748b; margin-left: 6px; }
 
+  /* Auto-advance toggle next to case nav */
+  .auto-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(15, 23, 42, 0.6);
+    padding: 7px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    color: #cbd5e1;
+    cursor: pointer;
+    user-select: none;
+  }
+  .auto-toggle input { cursor: pointer; }
+
+  /* Countdown banner shown after grading while next-case timer runs */
+  .advance-banner {
+    background: linear-gradient(90deg, #064e3b 0%, #065f46 100%);
+    border: 1px solid #10b981;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin: 12px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #d1fae5;
+    font-size: 13px;
+  }
+  .advance-banner .progress {
+    flex: 1;
+    height: 6px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .advance-banner .progress > div {
+    height: 100%;
+    background: #34d399;
+    transform-origin: left;
+  }
+  .advance-banner button {
+    background: rgba(255,255,255,0.1);
+    color: #ecfdf5;
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: inherit;
+  }
+  .advance-banner button:hover { background: rgba(255,255,255,0.2); }
+  .advance-banner .skip { background: #10b981; border-color: #10b981; color: #022c22; }
+
   /* mode tabs */
   .mode-tabs {
     display: inline-flex;
@@ -400,6 +454,10 @@
       <select id="caseSelect"></select>
       <button id="btnNext" title="다음 케이스">›</button>
     </div>
+    <label class="auto-toggle" title="채점 후 자동으로 랜덤 다음 문제로 이동">
+      <input type="checkbox" id="autoAdvanceToggle" checked>
+      🔀 랜덤 자동 진행
+    </label>
   </header>
 
   <div class="tabs">
@@ -523,7 +581,7 @@
 // On first load after a bump we force one reload that bypasses the disk cache,
 // so users stop seeing old-cached UI without needing manual Ctrl+Shift+R.
 // ============================================================
-const APP_BUILD = "v3.1-beta";
+const APP_BUILD = "v3.2-beta-autoadvance";
 (function selfHealReload() {
   const KEY = "cxr-app-build";
   const seen = localStorage.getItem(KEY);
@@ -548,6 +606,103 @@ let currentIdx = 0;
 let currentMode = "freeText";  // "freeText" | "click" | "oral"
 let summaryMode = "freeText";
 const STORAGE_KEY = "cxr-grading-state-v2";
+
+// Random rotation queue: cycles through all 10 cases in shuffled order,
+// reshuffles when empty. Initialized after cases.json loads.
+let randomQueue = [];
+let autoAdvanceTimer = null;
+let autoAdvanceAnimFrame = null;
+const AUTO_ADVANCE_MS = 3500;
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function refillRandomQueue(excludeIdx) {
+  randomQueue = shuffle(CASES.map((_, i) => i));
+  // Avoid immediately re-showing the case the user just graded
+  if (typeof excludeIdx === "number" && randomQueue[0] === excludeIdx && randomQueue.length > 1) {
+    [randomQueue[0], randomQueue[1]] = [randomQueue[1], randomQueue[0]];
+  }
+}
+
+function pickNextRandom(excludeIdx) {
+  if (randomQueue.length === 0) refillRandomQueue(excludeIdx);
+  // If the queue's first item is the case we just left, skip it
+  while (randomQueue.length > 0 && randomQueue[0] === excludeIdx) {
+    randomQueue.shift();
+    if (randomQueue.length === 0) refillRandomQueue(excludeIdx);
+  }
+  return randomQueue.shift();
+}
+
+function cancelAutoAdvance(silent) {
+  if (autoAdvanceTimer) { clearTimeout(autoAdvanceTimer); autoAdvanceTimer = null; }
+  if (autoAdvanceAnimFrame) { cancelAnimationFrame(autoAdvanceAnimFrame); autoAdvanceAnimFrame = null; }
+  document.querySelectorAll(".advance-banner").forEach(el => el.remove());
+}
+
+function scheduleAutoAdvance(modeKey) {
+  cancelAutoAdvance();
+  const toggle = document.getElementById("autoAdvanceToggle");
+  if (!toggle || !toggle.checked) return;
+
+  // Build banner UI in the active mode's score section
+  const container = modeKey === "click"
+    ? document.getElementById("mcqScore")
+    : modeKey === "oral"
+    ? document.getElementById("oralScore")
+    : document.getElementById("scoreSection");
+  if (!container) return;
+  const banner = document.createElement("div");
+  banner.className = "advance-banner";
+  banner.innerHTML = `
+    <span>⏭ <b id="advanceSec">${(AUTO_ADVANCE_MS / 1000).toFixed(1)}</b>초 후 다음 랜덤 문제로</span>
+    <div class="progress"><div id="advanceProg" style="width:100%"></div></div>
+    <button class="skip" id="btnSkipAdvance">지금 가기 →</button>
+    <button id="btnCancelAdvance">취소</button>
+  `;
+  container.appendChild(banner);
+
+  const start = performance.now();
+  const tick = (now) => {
+    const elapsed = now - start;
+    const remain = Math.max(0, AUTO_ADVANCE_MS - elapsed);
+    const pctLeft = (remain / AUTO_ADVANCE_MS) * 100;
+    const secEl = document.getElementById("advanceSec");
+    const progEl = document.getElementById("advanceProg");
+    if (secEl) secEl.textContent = (remain / 1000).toFixed(1);
+    if (progEl) progEl.style.width = pctLeft + "%";
+    if (remain > 0) autoAdvanceAnimFrame = requestAnimationFrame(tick);
+  };
+  autoAdvanceAnimFrame = requestAnimationFrame(tick);
+
+  banner.querySelector("#btnSkipAdvance").addEventListener("click", () => {
+    cancelAutoAdvance();
+    advanceToRandomNext();
+  });
+  banner.querySelector("#btnCancelAdvance").addEventListener("click", () => {
+    cancelAutoAdvance();
+  });
+
+  autoAdvanceTimer = setTimeout(() => {
+    autoAdvanceTimer = null;
+    advanceToRandomNext();
+  }, AUTO_ADVANCE_MS);
+}
+
+function advanceToRandomNext() {
+  cancelAutoAdvance();
+  const nextIdx = pickNextRandom(currentIdx);
+  renderCase(nextIdx);
+  // Scroll back to top so the new X-ray is visible
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
 
 // state shape:
 // {
@@ -606,7 +761,10 @@ async function loadCases() {
     CASES_VERSION = String(data.version || Date.now());
     if (CASES.length === 0) throw new Error("No cases");
     populateCaseSelector();
-    renderCase(0);
+    refillRandomQueue();
+    // First case is randomly picked from the freshly shuffled queue
+    const firstIdx = randomQueue.shift();
+    renderCase(firstIdx);
     renderSummary();
   } catch (e) {
     document.getElementById("caseTitle").textContent = "❌ cases.json 로드 실패";
@@ -629,6 +787,8 @@ function populateCaseSelector() {
 function renderCase(idx) {
   if (idx < 0 || idx >= CASES.length) return;
 
+  // Any pending auto-advance is invalidated by navigation
+  cancelAutoAdvance();
   // Clean up any audio resources from previous case
   resetOralUIOnly();
 
@@ -811,6 +971,7 @@ document.getElementById("btnGrade").addEventListener("click", () => {
   };
   saveState();
   renderFreeTextScore(g, c);
+  scheduleAutoAdvance("freeText");
 });
 
 document.getElementById("btnClear").addEventListener("click", () => {
@@ -1056,6 +1217,7 @@ document.getElementById("btnSubmitMCQ").addEventListener("click", () => {
   data.score = { pct: Math.round((correct / total) * 100), score: correct, total };
   saveState();
   renderClickMode();
+  scheduleAutoAdvance("click");
 });
 
 document.getElementById("btnResetMCQ").addEventListener("click", () => {
@@ -1225,6 +1387,7 @@ document.getElementById("btnFinishOral").addEventListener("click", () => {
   saveState();
   document.getElementById("oralScore").innerHTML = renderOralScoreHTML(data.score);
   document.getElementById("oralSaveIndicator").textContent = `(완료: ${pct}점)`;
+  scheduleAutoAdvance("oral");
 });
 
 document.getElementById("btnResetOral").addEventListener("click", () => {
