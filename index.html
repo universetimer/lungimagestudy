@@ -30,8 +30,21 @@
     flex-wrap: wrap;
     gap: 10px;
   }
-  header h1 { margin: 0 0 4px 0; font-size: 22px; font-weight: 700; }
+  header h1 { margin: 0 0 4px 0; font-size: 22px; font-weight: 700; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  header h1 .beta-badge {
+    display: inline-block;
+    background: #f59e0b;
+    color: #111827;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+    text-shadow: none;
+    vertical-align: middle;
+  }
   header p { margin: 0; color: #cbd5e1; font-size: 13px; }
+  header p .beta-note { color: #fbbf24; font-weight: 600; }
   .case-nav {
     display: flex;
     align-items: center;
@@ -379,8 +392,8 @@
 <div class="container">
   <header>
     <div>
-      <h1>흉부 X-ray 판독 자동 채점</h1>
-      <p>12항목 표준 판독 템플릿. 3가지 시험 방식: 서술형 / 객관식 / 구술</p>
+      <h1>흉부 X-ray 판독 자동 채점 <span class="beta-badge">BETA</span></h1>
+      <p>12항목 표준 판독 템플릿 · 3가지 시험 방식: 서술형 / 객관식 / 구술 · <span class="beta-note">베타 버전: 기능과 정답 키워드는 계속 개선 중</span></p>
     </div>
     <div class="case-nav">
       <button id="btnPrev" title="이전 케이스">‹</button>
@@ -505,6 +518,27 @@
 </div>
 
 <script>
+// ============================================================
+// Build identifier — bump this whenever the HTML itself changes meaningfully.
+// On first load after a bump we force one reload that bypasses the disk cache,
+// so users stop seeing old-cached UI without needing manual Ctrl+Shift+R.
+// ============================================================
+const APP_BUILD = "v3.1-beta";
+(function selfHealReload() {
+  const KEY = "cxr-app-build";
+  const seen = localStorage.getItem(KEY);
+  if (seen !== APP_BUILD) {
+    localStorage.setItem(KEY, APP_BUILD);
+    const u = new URL(window.location.href);
+    // Only reload once per build bump (sessionStorage gate prevents loops)
+    if (!sessionStorage.getItem("cxr-build-reload-done") && seen) {
+      sessionStorage.setItem("cxr-build-reload-done", APP_BUILD);
+      u.searchParams.set("b", APP_BUILD);
+      window.location.replace(u.toString());
+    }
+  }
+})();
+
 // ============================================================
 // State
 // ============================================================
